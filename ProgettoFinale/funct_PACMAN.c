@@ -4,6 +4,8 @@
 
 
 void printWholeMatrix();
+void printPacManLifes();
+void victory();
 void printSquare(int,int, int,int );
 void printPacman();
 
@@ -29,14 +31,14 @@ volatile PACMAN game =  //variabile che contiene tutto ciò che riguarda il gioco
 				{-1, -1,  1,  0,  0,  1,  0,  0,  1,  0,  -1,  0,  -1,  -1,  -1,  -1,  0,  1,  0,  1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  1,  0,  1,  0,  1,  0,  0,  -1,  0,  -1,  0,  0,  0,  1,  0,  1,  0,  1,  -1,  -1},
 				{-1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,   -1},
 				{-1, -1,  1,  0,  0,  1,  0,  0,  1,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  0,  0,  0,  0,  0,  1,  0,  1,  -1,  -1},
-				{-1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  0,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, -1,  -1,  -1,  -1,  -1,  0,  0,  0,  0, -1,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,   -1},
-				{3, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
-				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
-				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
-				{3, 0 ,  0,  0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
-				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0, 0,  3},
-				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
-				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1	,  -1,  -1,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
+				{-1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, -1,  -1,  -1,  -1,  -1,  -1,  0,  0,  0, -1,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,   -1},
+				{3, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
+				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
+				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
+				{3, 0 ,  0,  0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
+				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0, 0,  3},
+				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
+				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1	,  -1,  -1,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
 				{-1, -1,  0,  -1,  -1,  -1,  0,  0,  0,  0,  -1,  -1,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1, -1},
 				{-1, -1,  1,  -1,  0,  -1,  0,  0,  1,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  1,  -1,  -1},
 				{-1, -1,  0,  -1,  0,  -1,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1, -1},
@@ -69,12 +71,15 @@ void gameInit()
 	
 	game.timer=TimerOfGame;
 	game.pacmanDirection = Right;
-	
+	game.lifes=1;
+	game.lifesWin=0;
+	game.numOfPillsNotTaken=240;
 	game.positionOfPacman.y=23;
 	game.positionOfPacman.x=1;
 	game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x]= Pacman;
 
 	printWholeMatrix();//stampiamo la matrice
+	printPacManLifes();
 	GUI_Text(15, 10, (uint8_t *) "Time", White, Black);
 	GUI_Text(40, 25, (uint8_t *) "60", White, Black);
 	GUI_Text(190, 10, (uint8_t *) "Score", White, Black);
@@ -207,6 +212,29 @@ void printPacman()
 	}
 }
 
+void printPacManLifes()
+{
+	int i,j,life;
+	for(life=0; life < game.lifes; life++)
+	{
+			coordinate realCord;
+			realCord.x = 15+13*life;
+			realCord.y =305;
+	
+			for(i=realCord.x; i < realCord.x+sizeCell; i++)
+			{
+				for(j=realCord.y; j < realCord.y+sizeCell; j++)
+				{
+						if(i-realCord.x == 0 && (j-realCord.y == 0 || j-realCord.y == 4)) continue;
+						if(i-realCord.x == 3 && j-realCord.y != 0 && j-realCord.y != 4) continue;
+						if(i-realCord.x == 2 && (j-realCord.y == 2)) continue;
+						if(i-realCord.x == 4) continue;	
+						LCD_SetPoint(i,j,Orange);
+				}
+			}
+	}
+}
+
 void movePacman(int up, int down, int left, int right)
 {
 	char string[10];
@@ -215,10 +243,12 @@ void movePacman(int up, int down, int left, int right)
 	{
 		if(game.labirinth[game.positionOfPacman.y-up+down][game.positionOfPacman.x+right-left] == Pills)
 		{
+			game.numOfPillsNotTaken--;
 			newScore += PillPoint;
 		}
 		if(game.labirinth[game.positionOfPacman.y-up+down][game.positionOfPacman.x+right-left] == SuperPills)
 		{
+			game.numOfPillsNotTaken--;
 			newScore += SuperPillPoint;
 		}
 	
@@ -232,9 +262,20 @@ void movePacman(int up, int down, int left, int right)
 		
 		if(game.score != newScore)
 		{
+			if(game.score != 0 && game.score % LIFEPOINT*(game.lifesWin+1) == 0)
+			{
+				game.lifesWin=1;
+				game.lifes++;
+				printPacManLifes();
+			}
+				
 				sprintf(string,"%d",newScore);
 				GUI_Text(205, 25, (uint8_t *) string, White, Black);
 				game.score=newScore;
+		}
+		if(game.numOfPillsNotTaken == 0)
+		{
+			 victory();
 		}
 		
 		if(game.labirinth[game.positionOfPacman.y-up+down][game.positionOfPacman.x+right-left] == Teleport)
@@ -242,10 +283,8 @@ void movePacman(int up, int down, int left, int right)
 			if(game.positionOfPacman.x+right-left == (groupedY -1))
 			{
 					game.positionOfPacman.x=1;
-					game.positionOfPacman.y+=-up+down;
 			}else{
 					game.positionOfPacman.x=groupedY-2;
-					game.positionOfPacman.y+=-up+down;
 			}
 		}else{		
 				game.positionOfPacman.x+=+right-left;
@@ -283,6 +322,20 @@ void gameOver()
 	disable_timer(0);
 	disable_timer(1);
 	disable_RIT();
+	
+	GUI_Text(65, 158, (uint8_t *) " Game Over!", Red, Black);
+	
+}
+void victory()
+{
+	game.timer=0;
+	game.status = Win;
+	disable_timer(0);
+	disable_timer(1);
+	disable_RIT();
+	
+	GUI_Text(79, 158, (uint8_t *) "Victory!", Yellow, Black);
+	
 }
 
 

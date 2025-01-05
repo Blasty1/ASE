@@ -30,8 +30,11 @@ void TIMER0_IRQHandler (void)
 {
 	char stringa[3];
 	game.timer--;
-	if(game.timer < 0){
+	if(game.timer < 0 && game.numOfPillsNotTaken != 0){
 			gameOver();
+	}else if(game.timer < 0)
+	{
+		victory();
 	}
 	sprintf(stringa,"%d",game.timer);
 	

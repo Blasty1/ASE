@@ -7,6 +7,7 @@
 #define TimerOfGame 60
 #define PillPoint 10
 #define SuperPillPoint 50
+#define LIFEPOINT 1000
 
 
 #include "LPC17xx.h"
@@ -38,11 +39,13 @@ typedef struct{
 typedef struct{
 	coordinate positionOfPacman;
 	labObject labirinth[groupedX][groupedY];
-	int lives;
+	int lifes;
 	int score;
 	int timer;
+	int lifesWin;
 	Direction pacmanDirection;
 	STATUSgame status;
+	int numOfPillsNotTaken;
 } PACMAN;
 
 void startGame();
