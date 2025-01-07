@@ -28,6 +28,9 @@ extern volatile PACMAN game;
 
 void TIMER0_IRQHandler (void)
 {
+	int i=0;
+	static numOfPillsGenerated=0;
+	int randomNumberY ,randomNumberX;
 	char stringa[3];
 	game.timer--;
 	if(game.timer < 0 && game.numOfPillsNotTaken != 0){
@@ -36,10 +39,30 @@ void TIMER0_IRQHandler (void)
 	{
 		victory();
 	}
-	sprintf(stringa,"%d",game.timer);
+	if(game.timer < 10)
+	{
+			sprintf(stringa,"0%d",game.timer);
+	}else{
+			sprintf(stringa,"%d",game.timer);
+	}
 	
 	GUI_Text(40, 25,(uint8_t * )stringa , White, Black);
 
+	if(numOfPillsGenerated < NUMOFSUPERPILLS)
+	{
+		if ( game.superPillsGeneration[numOfPillsGenerated].time == game.timer)
+		{
+			game.labirinth[\
+					game.superPillsGeneration[numOfPillsGenerated].position.y\
+			]\
+			[
+				game.superPillsGeneration[numOfPillsGenerated].position.x\
+			] = 2;
+			printSquare(30+i,30+i,5,Orange);
+			i++;
+			numOfPillsGenerated++;
+		}
+	}
 	
 		
 	LPC_TIM0->IR = 1;			/* clear interrupt flag */

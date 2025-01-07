@@ -44,7 +44,7 @@ int main(void)
 {
 	int i,j;
   SystemInit();  												/* System Initialization (i.e., PLL)  */
-	
+	BUTTON_init();
   LCD_Initialization();
 	
   //TP_Init();

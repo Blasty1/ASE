@@ -8,6 +8,7 @@
 #define PillPoint 10
 #define SuperPillPoint 50
 #define LIFEPOINT 1000
+#define NUMOFSUPERPILLS 4
 
 
 #include "LPC17xx.h"
@@ -15,12 +16,22 @@
 
 
 typedef enum { 
-		Playing, Pause, Win,GameOver, Wait
+		Playing, Pause, Win,GameOver
 } STATUSgame;
 
 typedef enum { 
 		Right,Left,Up,Down
 } Direction;
+
+typedef struct{
+	int x;
+	int y;
+} coordinate;
+
+typedef struct{
+	int time;
+	coordinate position;
+} superPillsHandle;
 
 typedef enum { 
 		Pacman = -2,
@@ -31,10 +42,6 @@ typedef enum {
 		Teleport = 3
 } labObject;
 
-typedef struct{
-	int x;
-	int y;
-} coordinate;
 
 typedef struct{
 	coordinate positionOfPacman;
@@ -46,7 +53,9 @@ typedef struct{
 	Direction pacmanDirection;
 	STATUSgame status;
 	int numOfPillsNotTaken;
+	superPillsHandle superPillsGeneration[NUMOFSUPERPILLS];
 } PACMAN;
 
 void startGame();
 void gameInit();
+void printSquare(int x,int y,int size,int color);

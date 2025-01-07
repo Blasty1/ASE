@@ -28,8 +28,9 @@ extern volatile PACMAN game;
 void RIT_IRQHandler (void)
 {					
 	static int status[] = {0,0,0,0};
-	static int position=0;	
-	
+	static int position=0;
+	disable_RIT();	
+	if(game.status == Playing){
 	if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	
 		/* Joytick UP pressed */
 		status[Up]++;
@@ -80,21 +81,20 @@ void RIT_IRQHandler (void)
 		status[Right]=0;
 		status[Up]=0;
 	}
+}
 	
 	/* button management */
 	if(down>=1){ 
-		if((LPC_GPIO2->FIOPIN & (1<<11)) == 0){	/* KEY1 pressed */
+		if((LPC_GPIO2->FIOPIN & (1<<10)) == 0){	/* INT0 pressed */
 			switch(down){				
 				case 2:				/* pay attention here: please see slides 19_ to understand value 2 */
-				if( position == 7){
-					LED_On(0);
-					LED_Off(7);
-					position = 0;
-				}
-				else{
-					LED_Off(position);
-					LED_On(++position);
-				}
+					if(game.status == Playing)
+					{
+						pause();
+					}else if(game.status == Pause)
+					{
+						resume();
+					}
 					break;
 				default:
 					break;
@@ -103,8 +103,8 @@ void RIT_IRQHandler (void)
 		}
 		else {	/* button released */
 			down=0;			
-			NVIC_EnableIRQ(EINT1_IRQn);							 /* enable Button interrupts			*/
-			LPC_PINCON->PINSEL4    |= (1 << 22);     /* External interrupt 0 pin selection */
+			NVIC_EnableIRQ(EINT0_IRQn);							 /* enable Button interrupts			*/
+			LPC_PINCON->PINSEL4    |= (1 << 20);     /* External interrupt 0 pin selection */
 		}
 	}
 /*	else{
@@ -113,7 +113,7 @@ void RIT_IRQHandler (void)
 	} */
 	
   LPC_RIT->RICTRL |= 0x1;	/* clear interrupt flag */
-	
+	enable_RIT();
   return;
 }
 

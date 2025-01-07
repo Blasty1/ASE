@@ -5,7 +5,9 @@ extern int down;
 
 void EINT0_IRQHandler (void)	  	/* INT0														 */
 {		
-	
+	NVIC_DisableIRQ(EINT0_IRQn);		/* disable Button interrupts			 */
+	LPC_PINCON->PINSEL4    &= ~(1 << 20);     /* GPIO pin selection */
+	down=1;
 	LPC_SC->EXTINT &= (1 << 0);     /* clear pending interrupt         */
 }
 

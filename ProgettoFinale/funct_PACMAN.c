@@ -1,13 +1,17 @@
 #include "sample.h"
 #include<stdio.h>
 #include<string.h>
-
+#include "RIT/RIT.h"
 
 void printWholeMatrix();
 void printPacManLifes();
 void victory();
+void pause();
 void printSquare(int,int, int,int );
 void printPacman();
+void generateSuperPills();
+void bubbleSortForSuperPillsArray();
+
 
 volatile PACMAN game =  //variabile che contiene tutto ciò che riguarda il gioco
 	{
@@ -15,7 +19,7 @@ volatile PACMAN game =  //variabile che contiene tutto ciò che riguarda il gioco
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1},
         {-1, -1,  -1,  -1,  -1,  -1,  -1,  -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1},
         {-1, -1,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  0,  -1,  -1,  0,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  -1,  -1},
-				{-1, -1,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1},		
+				{-1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1},		
 				{-1, -1,  1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 0,  1,  0,  0,  -1,  -1,  -1,  -1,  0,  1,  0,  0,  -1,  -1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  0,  1,  0,  1,  0,  1,  -1, -1},
 				{-1, -1,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  -1,  0,  0,  -1,  0,  0,  0,  0,  -1,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1},
 				{-1, -1,  1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0,  1,  0,  0,  -1,  -1,  -1,  -1,  0,  1,  0,  0,  -1,  -1,  0,  1,  0,  1,  0,  1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0,  0,  1,  0,  1,  0,  1,  -1,   -1},
@@ -35,7 +39,7 @@ volatile PACMAN game =  //variabile che contiene tutto ciò che riguarda il gioco
 				{3, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
 				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
 				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
-				{3, 0 ,  0,  0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
+				{3, 0 ,  0,  0,  1,  0,  1,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
 				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0, 0,  3},
 				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
 				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1	,  -1,  -1,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
@@ -70,6 +74,7 @@ void gameInit()
 {
 	
 	game.timer=TimerOfGame;
+	game.status = Playing;
 	game.pacmanDirection = Right;
 	game.lifes=1;
 	game.lifesWin=0;
@@ -85,28 +90,17 @@ void gameInit()
 	GUI_Text(190, 10, (uint8_t *) "Score", White, Black);
 	GUI_Text(205, 25, (uint8_t *) "00", White, Black);
 	
-	startGame();
-}
+	init_timer(0,0,0x17D7840); //tempo del gioco 1s
+	init_timer(1,0,0x2625A0); // aggiornamento movimento pacman , 0.1s
+	init_RIT(0x4C4B40); //ogni 50ms
 
-void startGame()
-{
-		game.status = Playing;
-	
-		init_timer(0,0,0x17D7840); //tempo del gioco 1s
-		init_timer(1,0,0x2625A0); // aggiornamento movimento pacman , 0.1s
-		init_RIT(0x4C4B40); //ogni 50ms
-	
-		NVIC_SetPriority(RIT_IRQn,0);
-		NVIC_SetPriority(TIMER0_IRQn,1);
-		NVIC_SetPriority(TIMER1_IRQn,1);
+	enable_RIT();
+	NVIC_SetPriority(RIT_IRQn,0);
+	NVIC_SetPriority(TIMER0_IRQn,1);
+	NVIC_SetPriority(TIMER1_IRQn,1);
+	generateSuperPills();
 
-		
-		enable_timer(0);
-		enable_timer(1);
-		enable_RIT();
-
-		
-	
+	pause();
 }
 
 
@@ -338,4 +332,58 @@ void victory()
 	
 }
 
+void pause()
+{
+	game.status = Pause;
+	disable_timer(0);
+	disable_timer(1);
+	
+	GUI_Text(90, 158, (uint8_t *) "Pause", White, Black);
+}
+void resume()
+{
+	game.status=Playing;
+	enable_timer(0);
+	enable_timer(1);
+	
+	GUI_Text(90, 158, (uint8_t *) "Pause", Black, Black);	
+}
 
+void generateSuperPills()
+{
+	int i;
+	int minX = 3, minY=3, maxX= groupedX-2, maxY=groupedY-2,randomNumberX,randomNumberY;
+	srand(LPC_RIT->RICOUNTER & LPC_TIM0->TCR);
+	
+	for(i=0; i < NUMOFSUPERPILLS; i++)
+	{
+		game.superPillsGeneration[i].time = rand()% 60 +1 ;
+			 
+			do{
+				randomNumberX = (rand() % (maxX - minX + 1)) + minX;
+				randomNumberY = (rand() % (maxY - minY + 1)) + minY;
+
+			}while(game.labirinth[randomNumberX][randomNumberY] != 1);	
+			
+			game.superPillsGeneration[i].position.x = randomNumberX;
+			game.superPillsGeneration[i].position.y = randomNumberY;
+	}
+	bubbleSortForSuperPillsArray();
+	
+}
+
+
+void bubbleSortForSuperPillsArray() {
+    int i, j;
+		superPillsHandle temp;
+    for (i = 0; i < NUMOFSUPERPILLS-1; i++) {
+        for (j = 0; j < NUMOFSUPERPILLS - i - 1; j++) {
+            if (game.superPillsGeneration[j].time < game.superPillsGeneration[j+1].time) {
+                // Scambia gli elementi
+                temp = game.superPillsGeneration[j];
+                game.superPillsGeneration[j] = game.superPillsGeneration[j+1];
+                game.superPillsGeneration[j+1] = temp;
+            }
+        }
+    }
+}
