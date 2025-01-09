@@ -2,6 +2,9 @@
 #include<stdio.h>
 #include<string.h>
 #include "RIT/RIT.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 void printWholeMatrix();
 void printPacManLifes();
@@ -11,7 +14,10 @@ void printSquare(int,int, int,int );
 void printPacman();
 void generateSuperPills();
 void bubbleSortForSuperPillsArray();
+int get_pseudo_random(int min, int max);
+unsigned int generate_better_seed();
 
+extern volatile unsigned short AD_current;   
 
 volatile PACMAN game =  //variabile che contiene tutto ciò che riguarda il gioco
 	{
@@ -353,16 +359,14 @@ void generateSuperPills()
 {
 	int i;
 	int minX = 3, minY=3, maxX= groupedX-2, maxY=groupedY-2,randomNumberX,randomNumberY;
-	srand(LPC_RIT->RICOUNTER & LPC_TIM0->TCR);
-	
+	srand(generate_better_seed());
 	for(i=0; i < NUMOFSUPERPILLS; i++)
 	{
-		game.superPillsGeneration[i].time = rand()% 60 +1 ;
+		game.superPillsGeneration[i].time = get_pseudo_random(10,60);
 			 
 			do{
-				randomNumberX = (rand() % (maxX - minX + 1)) + minX;
-				randomNumberY = (rand() % (maxY - minY + 1)) + minY;
-
+				randomNumberX = get_pseudo_random(minX,maxX);
+				randomNumberY =  get_pseudo_random(minY,maxY);
 			}while(game.labirinth[randomNumberX][randomNumberY] != 1);	
 			
 			game.superPillsGeneration[i].position.x = randomNumberX;
@@ -386,4 +390,42 @@ void bubbleSortForSuperPillsArray() {
             }
         }
     }
+}
+
+// Genera un seed più casuale usando più fonti di entropia
+unsigned int generate_better_seed() {
+    unsigned int seed = 0;
+    
+    // Usa time() per il timestamp corrente
+    seed ^= (unsigned int)time(NULL);
+    
+    // Usa il process ID
+    seed ^= LPC_TIM0->TCR;
+	
+		seed ^= LPC_TIM1->TCR;
+    
+    // Usa il clock di CPU
+    seed ^= (unsigned int)clock();
+	
+		seed ^= AD_current;
+    
+    return seed;
+}
+
+// Genera un numero casuale tra min e max (inclusi)
+int get_pseudo_random(int min, int max) {
+		unsigned long range = (unsigned long)(max - min + 1);
+    unsigned long buckets = RAND_MAX / range;
+    unsigned long limit = buckets * range;
+
+    
+    unsigned long r;
+    do {
+        r = rand();
+        
+
+        
+    } while (r >= limit);
+
+    return min + (int)(r / buckets);
 }

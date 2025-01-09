@@ -14,6 +14,7 @@
 #include "../TouchPanel/TouchPanel.h"
 #include <stdio.h> /*for sprintf*/
 #include "sample.h"
+
 extern volatile PACMAN game;
 /******************************************************************************
 ** Function name:		Timer0_IRQHandler
@@ -28,8 +29,8 @@ extern volatile PACMAN game;
 
 void TIMER0_IRQHandler (void)
 {
-	int i=0;
-	static numOfPillsGenerated=0;
+	static int  i=0;
+	static int numOfPillsGenerated=0;
 	int randomNumberY ,randomNumberX;
 	char stringa[3];
 	game.timer--;
@@ -58,8 +59,7 @@ void TIMER0_IRQHandler (void)
 			[
 				game.superPillsGeneration[numOfPillsGenerated].position.x\
 			] = 2;
-			printSquare(30+i,30+i,5,Orange);
-			i++;
+			printSquare(game.superPillsGeneration[numOfPillsGenerated].position.y,game.superPillsGeneration[numOfPillsGenerated].position.x,5,Orange);
 			numOfPillsGenerated++;
 		}
 	}

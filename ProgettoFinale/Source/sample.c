@@ -31,7 +31,7 @@
 #include "RIT/RIT.h"
 #include "joystick/joystick.h"
 #include "sample.h"
-
+#include "adc/adc.h"
 
 
 #ifdef SIMULATOR
@@ -59,8 +59,9 @@ int main(void)
 										x: 0 a 240 
 		E' quindi un 240x250
 	*/
+	ADC_init();
+	ADC_start_conversion();
 
-	
 	gameInit();
 
 	//init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
