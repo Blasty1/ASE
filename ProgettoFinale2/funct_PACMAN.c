@@ -12,10 +12,12 @@ void victory();
 void pause();
 void printSquare(int,int, int,int );
 void printPacman();
+void printGhost();
 void generateSuperPills();
 void bubbleSortForSuperPillsArray();
 int get_pseudo_random(int min, int max);
 unsigned int generate_better_seed();
+void init_ghost();
 
 extern volatile unsigned short AD_current;   
 
@@ -88,7 +90,8 @@ void gameInit()
 	game.positionOfPacman.y=23;
 	game.positionOfPacman.x=1;
 	game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x]= Pacman;
-
+	
+	init_ghost();
 	printWholeMatrix();//stampiamo la matrice
 	printPacManLifes();
 	GUI_Text(15, 10, (uint8_t *) "Time", White, Black);
@@ -129,7 +132,11 @@ void LCD_setCell(int x, int y,labObject objectToPrint)
 	}else if(objectToPrint == Pacman)
 	{
 		printPacman();
+	}else if(objectToPrint == Ghost)
+	{
+		printGhost();
 	}
+	
 
 }
 
@@ -165,6 +172,37 @@ void printSquare(int x,int y,int size,int color)
 			}
 	}
 
+}
+
+void printGhost()
+{
+	int i,j;
+	coordinate realCord;
+	realCord.x = (game.ghost.positionOfGhost.x) * sizeCell;
+	realCord.y =(game.ghost.positionOfGhost.y)*sizeCell + OFFSETY;
+	
+
+	for(i=realCord.x; i < realCord.x+sizeCell; i++)
+	{
+		for(j=realCord.y; j < realCord.y+sizeCell; j++)
+		{
+		
+			if((i-realCord.x == 0  || i-realCord.x == 4 ) && (j-realCord.y == 0)) continue;
+			if( ( i-realCord.x == 1 || i-realCord.x == 3) && ( j-realCord.y == 4 ) ) continue;
+			
+			if((i-realCord.x == 1 || i-realCord.x == 3) && (j-realCord.y == 1))
+			{
+				LCD_SetPoint(i,j,White);
+			}else {
+					if(game.ghost.status == FrightendMod)
+					{
+							LCD_SetPoint(i,j,Blue);
+					}else{
+							LCD_SetPoint(i,j,Red);
+					}
+			}
+		}
+	}
 }
 
 void printPacman()
@@ -351,8 +389,8 @@ void resume()
 	game.status=Playing;
 	enable_timer(0);
 	enable_timer(1);
-	
 	GUI_Text(90, 158, (uint8_t *) "Pause", Black, Black);	
+	printGhost();
 }
 
 void generateSuperPills()
@@ -376,6 +414,17 @@ void generateSuperPills()
 	
 }
 
+void init_ghost()
+{
+	game.ghost.positionOfGhost.x= 21;
+	game.ghost.positionOfGhost.y= 23;	
+	
+	game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x] = Ghost;
+	
+	game.ghost.ghostDirection = Up;
+	game.ghost.status = ChaseMode;
+}
+
 
 void bubbleSortForSuperPillsArray() {
     int i, j;
@@ -391,6 +440,7 @@ void bubbleSortForSuperPillsArray() {
         }
     }
 }
+
 
 // Genera un seed più casuale usando più fonti di entropia
 unsigned int generate_better_seed() {
