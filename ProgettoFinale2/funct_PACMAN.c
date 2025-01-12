@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
+
 
 void printWholeMatrix();
 void printPacManLifes();
@@ -18,6 +20,7 @@ void bubbleSortForSuperPillsArray();
 int get_pseudo_random(int min, int max);
 unsigned int generate_better_seed();
 void init_ghost();
+coordinate getNextMove(coordinate, int);
 
 extern volatile unsigned short AD_current;   
 
@@ -43,7 +46,7 @@ volatile PACMAN game =  //variabile che contiene tutto ciò che riguarda il gioco
 				{-1, -1,  1,  0,  0,  1,  0,  0,  1,  0,  -1,  0,  -1,  -1,  -1,  -1,  0,  1,  0,  1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  1,  0,  1,  0,  1,  0,  0,  -1,  0,  -1,  0,  0,  0,  1,  0,  1,  0,  1,  -1,  -1},
 				{-1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,   -1},
 				{-1, -1,  1,  0,  0,  1,  0,  0,  1,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  0,  0,  0,  0,  0,  1,  0,  1,  -1,  -1},
-				{-1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, -1,  -1,  -1,  -1,  -1,  -1,  0,  0,  0, -1,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,   -1},
+				{-1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  -1,  -1,  -1,  -1,  -1,  4, 4,  4,  4, 4,  -1,  -1,  -1,  -1,  -1,  0,  0,  0, -1,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  -1,   -1},
 				{3, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  -1,  -1,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
 				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3},
 				{3, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  -1,  0,  0,  0,  0,  0,  -1,  0,  -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, 3},
@@ -103,10 +106,15 @@ void gameInit()
 	init_timer(1,0,0x2625A0); // aggiornamento movimento pacman , 0.1s
 	init_RIT(0x4C4B40); //ogni 50ms
 
+	//inizialmente ogni 0.5 secondi si aggiorna il movimento del ghost
+	init_timer(2,0,0xBEBC20);
+	
 	enable_RIT();
 	NVIC_SetPriority(RIT_IRQn,0);
-	NVIC_SetPriority(TIMER0_IRQn,1);
+	NVIC_SetPriority(TIMER0_IRQn,2);
 	NVIC_SetPriority(TIMER1_IRQn,1);
+	NVIC_SetPriority(TIMER2_IRQn,1);
+
 	generateSuperPills();
 
 	pause();
@@ -135,6 +143,9 @@ void LCD_setCell(int x, int y,labObject objectToPrint)
 	}else if(objectToPrint == Ghost)
 	{
 		printGhost();
+	}else if(objectToPrint == UscitaBoxGhost)
+	{
+		printSquare(x,y,5,Red);
 	}
 	
 
@@ -170,6 +181,7 @@ void printSquare(int x,int y,int size,int color)
 					LCD_SetPoint(i,j,color);
 				}
 			}
+		
 	}
 
 }
@@ -272,12 +284,39 @@ void printPacManLifes()
 			}
 	}
 }
+void moveGhost()
+{
+	coordinate newPos;
+	
+	//nella posizione corrente del ghost metto cosa c'era prima
+	game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x] = game.ghost.beforeGhost;
+	if(game.ghost.beforeGhost == Pills)
+	{
+			LCD_setCell(game.ghost.positionOfGhost.x,game.ghost.positionOfGhost.y,Background);
+	}
+	LCD_setCell(game.ghost.positionOfGhost.x,game.ghost.positionOfGhost.y,game.ghost.beforeGhost);
+	
 
+
+	//aggiorniare posizione del ghost
+	if(game.ghost.status == FrightendMod)
+	{
+				newPos = getNextMove(game.positionOfPacman,0);
+	}else{
+		newPos = getNextMove(game.positionOfPacman,1);
+	}
+	game.ghost.positionOfGhost.y = newPos.y;
+	game.ghost.positionOfGhost.x = newPos.x;
+	
+	game.ghost.beforeGhost = game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x];
+	game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x] = Ghost;
+	printGhost();
+}
 void movePacman(int up, int down, int left, int right)
 {
 	char string[10];
 	int newScore = game.score;
-	if(game.labirinth[game.positionOfPacman.y-up+down][game.positionOfPacman.x+right-left] != Muro )
+	if(game.labirinth[game.positionOfPacman.y-up+down][game.positionOfPacman.x+right-left] != Muro && game.labirinth[game.positionOfPacman.y-up+down][game.positionOfPacman.x+right-left] != UscitaBoxGhost )
 	{
 		if(game.labirinth[game.positionOfPacman.y-up+down][game.positionOfPacman.x+right-left] == Pills)
 		{
@@ -360,6 +399,7 @@ void gameOver()
 	disable_timer(0);
 	disable_timer(1);
 	disable_RIT();
+	disable_timer(2);
 	
 	GUI_Text(65, 158, (uint8_t *) " Game Over!", Red, Black);
 	
@@ -381,6 +421,7 @@ void pause()
 	game.status = Pause;
 	disable_timer(0);
 	disable_timer(1);
+	disable_timer(2);
 	
 	GUI_Text(90, 158, (uint8_t *) "Pause", White, Black);
 }
@@ -389,6 +430,8 @@ void resume()
 	game.status=Playing;
 	enable_timer(0);
 	enable_timer(1);
+	enable_timer(2);
+
 	GUI_Text(90, 158, (uint8_t *) "Pause", Black, Black);	
 	printGhost();
 }
@@ -423,6 +466,7 @@ void init_ghost()
 	
 	game.ghost.ghostDirection = Up;
 	game.ghost.status = ChaseMode;
+	game.ghost.beforeGhost = Background;
 }
 
 
@@ -441,6 +485,72 @@ void bubbleSortForSuperPillsArray() {
     }
 }
 
+// Calcola la distanza euclidea tra due punti
+double getDistance(coordinate a, coordinate b) {
+    return sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
+}
+
+// Trova la prossima mossa migliore
+//con minimizeDistance a 1 lavora cercando il blocco che lo avvicina il più possibile
+//cono minimizeDistance a 0 lavora cercando il blocco che più lo allontana
+coordinate getNextMove(coordinate destination, int minimizeDistance) {
+    // Le 4 possibili direzioni (escluse le diagonali)
+		// Su (-1,0)
+		// Giù (1,0)
+		// Sinistra (0,-1)
+		// Destra (0,1)
+    const int dr[] = {-1, 1, 0, 0};
+    const int dc[] = {0,  0,  -1,1};
+		
+		int i;
+    
+    coordinate bestMove = game.ghost.positionOfGhost;
+    double minDistance,maxDistance;
+		
+		if(minimizeDistance == 1 )
+		{
+			 minDistance = 500000; // virtualmente infinito
+		}else
+		{
+				maxDistance = -1;
+		}
+    
+    // Controlla tutte le possibili mosse
+    for(i = 0; i < 4; i++) {
+        int newRow = game.ghost.positionOfGhost.y + dr[i];
+        int newCol = game.ghost.positionOfGhost.x + dc[i];
+        
+        // Verifica se la nuova posizione è valida
+        if(newRow >= 0 && newRow < groupedY && 
+           newCol >= 0 && newCol < groupedX && 
+           game.labirinth[newRow][newCol] != Teleport &&
+					 game.labirinth[newRow][newCol] != Muro
+					) {  
+ 
+            coordinate newPos = {newCol,newRow};
+            double distance = getDistance(newPos, destination);
+            
+						if(minimizeDistance == 1 )
+						{
+						//Aggiorna la migliore mossa se questa è più vicina alla destinazione
+							if(distance < minDistance) {
+									minDistance = distance;
+									bestMove = newPos;
+								}						
+						}else
+						{
+							//Aggiorna la migliore mossa se questa è più lontana alla destinazione
+							if(distance > maxDistance) {
+									maxDistance = distance;
+									bestMove = newPos;
+								}
+						}
+           
+        }
+    }
+    
+    return bestMove;
+}
 
 // Genera un seed più casuale usando più fonti di entropia
 unsigned int generate_better_seed() {

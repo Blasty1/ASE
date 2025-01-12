@@ -367,7 +367,7 @@ void generateSuperPills()
 			do{
 				randomNumberX = get_pseudo_random(minX,maxX);
 				randomNumberY =  get_pseudo_random(minY,maxY);
-			}while(game.labirinth[randomNumberX][randomNumberY] != 1);	
+			}while(game.labirinth[randomNumberY][randomNumberX] != 1);	
 			
 			game.superPillsGeneration[i].position.x = randomNumberX;
 			game.superPillsGeneration[i].position.y = randomNumberY;

@@ -100,6 +100,26 @@ void TIMER1_IRQHandler (void)
   return;
 }
 
+void TIMER2_IRQHandler (void)
+{
+	moveGhost();
+	
+	//aggiorno la velocità del timer 2 per far andare più o meno veloce il ghost
+	switch(game.timer)
+	{
+		case 45:
+			break;
+		case 30:
+			break;
+		case 20:
+			break;
+		case 10:
+			break;
+	}		
+  LPC_TIM2->IR = 1;			/* clear interrupt flag */
+  return;
+}
+
 /******************************************************************************
 **                            End Of File
 ******************************************************************************/

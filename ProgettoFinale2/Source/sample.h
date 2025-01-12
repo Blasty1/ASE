@@ -40,7 +40,8 @@ typedef enum {
 		Background = 0,
 	  Pills = 1,
 		SuperPills = 2,
-		Teleport = 3
+		Teleport = 3,
+		UscitaBoxGhost = 4
 } labObject;
 typedef enum{
 		ChaseMode,FrightendMod
@@ -51,6 +52,7 @@ typedef struct
 	Direction ghostDirection;
 	StatusGhost status;
 	coordinate positionOfGhost;
+	labObject beforeGhost;
 } GhostItem;
 
 typedef struct{

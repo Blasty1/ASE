@@ -58,8 +58,8 @@ void TIMER0_IRQHandler (void)
 			]\
 			[
 				game.superPillsGeneration[numOfPillsGenerated].position.x\
-			] = 2;
-			printSquare(game.superPillsGeneration[numOfPillsGenerated].position.y,game.superPillsGeneration[numOfPillsGenerated].position.x,5,Orange);
+			] = SuperPills;
+			printSquare(game.superPillsGeneration[numOfPillsGenerated].position.x,game.superPillsGeneration[numOfPillsGenerated].position.y,5,Orange);
 			numOfPillsGenerated++;
 		}
 	}
