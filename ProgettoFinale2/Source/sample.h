@@ -9,6 +9,9 @@
 #define SuperPillPoint 50
 #define LIFEPOINT 1000
 #define NUMOFSUPERPILLS 4
+#define POINTSFORGHOST 100
+#define TIMEINFRIGHTMOD 10
+#define TIMETOWAITGHOST 3
 
 
 #include "LPC17xx.h"
@@ -44,15 +47,20 @@ typedef enum {
 		UscitaBoxGhost = 4
 } labObject;
 typedef enum{
-		ChaseMode,FrightendMod
+		ChaseMode,FrightendMod,OutOfBox
 }StatusGhost;
 
+typedef enum{
+	Before=0,
+	BeforeBefore=1
+} QueueIndex;
 typedef struct 
 {
-	Direction ghostDirection;
+	int timeFrightendModStarted;
+	int timeToWait;
 	StatusGhost status;
 	coordinate positionOfGhost;
-	labObject beforeGhost;
+	coordinate historyOfPositions[2]; //utile per gestire malfuzionamenti dell'algoritmo di search path utilizzando QueueIndex per accedervi
 } GhostItem;
 
 typedef struct{

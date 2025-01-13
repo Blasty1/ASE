@@ -2,6 +2,7 @@
 #include<stdio.h>
 #include<string.h>
 #include "RIT/RIT.h"
+#include "timer/timer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -16,11 +17,14 @@ void printSquare(int,int, int,int );
 void printPacman();
 void printGhost();
 void generateSuperPills();
+void gameOver();
 void bubbleSortForSuperPillsArray();
 int get_pseudo_random(int min, int max);
 unsigned int generate_better_seed();
 void init_ghost();
 coordinate getNextMove(coordinate, int);
+void removePacManLifeOnDisplay();
+void pacmanIsTaken();
 
 extern volatile unsigned short AD_current;   
 
@@ -92,7 +96,7 @@ void gameInit()
 	game.numOfPillsNotTaken=240;
 	game.positionOfPacman.y=23;
 	game.positionOfPacman.x=1;
-	game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x]= Pacman;
+	//game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x]= Pacman;
 	
 	init_ghost();
 	printWholeMatrix();//stampiamo la matrice
@@ -106,14 +110,14 @@ void gameInit()
 	init_timer(1,0,0x2625A0); // aggiornamento movimento pacman , 0.1s
 	init_RIT(0x4C4B40); //ogni 50ms
 
-	//inizialmente ogni 0.5 secondi si aggiorna il movimento del ghost
-	init_timer(2,0,0xBEBC20);
+	//inizialmente ogni 0.62 secondi si aggiorna il movimento del ghost
+	init_timer(2,0,0xEC82E0);
 	
 	enable_RIT();
 	NVIC_SetPriority(RIT_IRQn,0);
 	NVIC_SetPriority(TIMER0_IRQn,2);
-	NVIC_SetPriority(TIMER1_IRQn,1);
-	NVIC_SetPriority(TIMER2_IRQn,1);
+	NVIC_SetPriority(TIMER1_IRQn,2);
+	NVIC_SetPriority(TIMER2_IRQn,0);
 
 	generateSuperPills();
 
@@ -261,7 +265,21 @@ void printPacman()
 		}
 	}
 }
+void removePacManLifeOnDisplay()
+{
+		int i,j;
+		coordinate realCord;
+		realCord.x = 15+13*game.lifes;
+		realCord.y =305;
 
+	for(i=realCord.x; i < realCord.x+sizeCell; i++)
+		{
+			for(j=realCord.y; j < realCord.y+sizeCell; j++)
+			{
+					LCD_SetPoint(i,j,Black);
+			}
+		}
+}
 void printPacManLifes()
 {
 	int i,j,life;
@@ -283,34 +301,71 @@ void printPacManLifes()
 				}
 			}
 	}
+	
 }
 void moveGhost()
 {
+	char string[20];
 	coordinate newPos;
 	
-	//nella posizione corrente del ghost metto cosa c'era prima
-	game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x] = game.ghost.beforeGhost;
-	if(game.ghost.beforeGhost == Pills)
+	if(game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x] == UscitaBoxGhost)
 	{
-			LCD_setCell(game.ghost.positionOfGhost.x,game.ghost.positionOfGhost.y,Background);
+		game.ghost.status = ChaseMode;
 	}
-	LCD_setCell(game.ghost.positionOfGhost.x,game.ghost.positionOfGhost.y,game.ghost.beforeGhost);
+	LCD_setCell(game.ghost.positionOfGhost.x,game.ghost.positionOfGhost.y,game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x]);
 	
-
-
 	//aggiorniare posizione del ghost
 	if(game.ghost.status == FrightendMod)
 	{
 				newPos = getNextMove(game.positionOfPacman,0);
-	}else{
+	}else if(game.ghost.status == ChaseMode){
 		newPos = getNextMove(game.positionOfPacman,1);
+	}else if(game.ghost.status == OutOfBox)
+	{
+		coordinate positionOfOutBox = {22,19};
+		newPos = getNextMove(positionOfOutBox,1);
 	}
+
 	game.ghost.positionOfGhost.y = newPos.y;
 	game.ghost.positionOfGhost.x = newPos.x;
-	
-	game.ghost.beforeGhost = game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x];
-	game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x] = Ghost;
 	printGhost();
+	
+	if(game.ghost.positionOfGhost.x == game.positionOfPacman.x && game.ghost.positionOfGhost.y == game.positionOfPacman.y)
+	{
+		if(game.ghost.status == ChaseMode)
+			{
+					pacmanIsTaken();
+			}
+			return;
+	}
+	
+	game.ghost.historyOfPositions[BeforeBefore]= game.ghost.historyOfPositions[Before];
+	game.ghost.historyOfPositions[Before]=newPos;
+}
+void pacmanIsTaken()
+{
+		game.lifes--;
+		if(game.lifes < 0 )
+		{
+			gameOver();
+			return;
+		}
+		//bisogna ridurre una vita
+		removePacManLifeOnDisplay();
+		
+		LCD_setCell(game.positionOfPacman.x,game.positionOfPacman.y,Background);
+		LCD_setCell(game.ghost.positionOfGhost.x,game.ghost.positionOfGhost.y,Background);
+		
+
+		
+		init_ghost();
+		game.positionOfPacman.x=1;
+		game.positionOfPacman.y=23;
+		game.pacmanDirection = Right;
+				
+		printPacman();
+		
+		pause();
 }
 void movePacman(int up, int down, int left, int right)
 {
@@ -327,12 +382,32 @@ void movePacman(int up, int down, int left, int right)
 		{
 			game.numOfPillsNotTaken--;
 			newScore += SuperPillPoint;
+			
+			game.ghost.status = FrightendMod;
+			game.ghost.timeFrightendModStarted = game.timer - TIMEINFRIGHTMOD;
 		}
 	
+		if(game.positionOfPacman.y-up+down == game.ghost.positionOfGhost.y && game.positionOfPacman.x+right-left == game.ghost.positionOfGhost.x )
+		{
+				disable_timer(1); //se ne occupa l'handler del ghost 
+				if(game.ghost.status == FrightendMod)
+				{
+					game.score += POINTSFORGHOST;
+					sprintf(string,"%d",game.score);
+					GUI_Text(205, 25, (uint8_t *) string, White, Black);
+					
+					init_ghost();
+					game.ghost.timeToWait = game.timer - TIMETOWAITGHOST;
+					enable_timer(1);
+				}else{
+					return;
+				}
+		}
 		
 		
 		if(game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x] != Muro && game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x] != Teleport)
 		{
+			game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x] = Background;
 			LCD_setCell(game.positionOfPacman.x,game.positionOfPacman.y,Background);
 		}
 
@@ -368,8 +443,6 @@ void movePacman(int up, int down, int left, int right)
 				game.positionOfPacman.y+=-up+down;
 		}
 		
-		game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x] = Pacman;
-
 		printPacman();
 		
 	}
@@ -448,7 +521,7 @@ void generateSuperPills()
 			do{
 				randomNumberX = get_pseudo_random(minX,maxX);
 				randomNumberY =  get_pseudo_random(minY,maxY);
-			}while(game.labirinth[randomNumberX][randomNumberY] != 1);	
+			}while(game.labirinth[randomNumberY][randomNumberX] != 1);	
 			
 			game.superPillsGeneration[i].position.x = randomNumberX;
 			game.superPillsGeneration[i].position.y = randomNumberY;
@@ -460,13 +533,9 @@ void generateSuperPills()
 void init_ghost()
 {
 	game.ghost.positionOfGhost.x= 21;
-	game.ghost.positionOfGhost.y= 23;	
-	
-	game.labirinth[game.ghost.positionOfGhost.y][game.ghost.positionOfGhost.x] = Ghost;
-	
-	game.ghost.ghostDirection = Up;
-	game.ghost.status = ChaseMode;
-	game.ghost.beforeGhost = Background;
+	game.ghost.positionOfGhost.y= 22;	
+	game.ghost.timeToWait=-1;
+	game.ghost.status = OutOfBox;
 }
 
 
@@ -506,6 +575,7 @@ coordinate getNextMove(coordinate destination, int minimizeDistance) {
     
     coordinate bestMove = game.ghost.positionOfGhost;
     double minDistance,maxDistance;
+		double distance;
 		
 		if(minimizeDistance == 1 )
 		{
@@ -524,12 +594,18 @@ coordinate getNextMove(coordinate destination, int minimizeDistance) {
         if(newRow >= 0 && newRow < groupedY && 
            newCol >= 0 && newCol < groupedX && 
            game.labirinth[newRow][newCol] != Teleport &&
-					 game.labirinth[newRow][newCol] != Muro
+					 game.labirinth[newRow][newCol] != Muro &&
+					(game.labirinth[newRow][newCol] != UscitaBoxGhost || game.ghost.status == OutOfBox )
 					) {  
- 
+						
             coordinate newPos = {newCol,newRow};
-            double distance = getDistance(newPos, destination);
+            distance = getDistance(newPos, destination);
             
+						//se con questa mossa ritorno dove sono stato 2 mosse fa vuoldire che c'è un bug nell'algoritmo, scelgo un altra posizione
+						if(game.ghost.historyOfPositions[BeforeBefore].x == newCol && game.ghost.historyOfPositions[BeforeBefore].y == newRow)
+						{
+							continue;
+						}
 						if(minimizeDistance == 1 )
 						{
 						//Aggiorna la migliore mossa se questa è più vicina alla destinazione

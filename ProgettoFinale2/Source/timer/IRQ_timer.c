@@ -46,6 +46,13 @@ void TIMER0_IRQHandler (void)
 	}else{
 			sprintf(stringa,"%d",game.timer);
 	}
+	if(game.ghost.status == FrightendMod)
+	{
+		if(game.ghost.timeFrightendModStarted == game.timer)
+		{
+			game.ghost.status = ChaseMode;
+		}
+	}
 	
 	GUI_Text(40, 25,(uint8_t * )stringa , White, Black);
 
@@ -58,9 +65,11 @@ void TIMER0_IRQHandler (void)
 			]\
 			[
 				game.superPillsGeneration[numOfPillsGenerated].position.x\
-			] = 2;
-			printSquare(game.superPillsGeneration[numOfPillsGenerated].position.y,game.superPillsGeneration[numOfPillsGenerated].position.x,5,Orange);
+			] = SuperPills;
+			
+			printSquare(game.superPillsGeneration[numOfPillsGenerated].position.x,game.superPillsGeneration[numOfPillsGenerated].position.y,5,Orange);
 			numOfPillsGenerated++;
+			
 		}
 	}
 	
@@ -96,26 +105,25 @@ void TIMER1_IRQHandler (void)
 			movePacmanDown();
 			break;
 	}
+
   LPC_TIM1->IR = 1;			/* clear interrupt flag */
   return;
 }
 
 void TIMER2_IRQHandler (void)
 {
-	moveGhost();
-	
-	//aggiorno la velocità del timer 2 per far andare più o meno veloce il ghost
-	switch(game.timer)
+	if(game.ghost.timeToWait != -1)
 	{
-		case 45:
-			break;
-		case 30:
-			break;
-		case 20:
-			break;
-		case 10:
-			break;
-	}		
+		if(game.ghost.timeToWait == game.timer)
+		{
+			game.ghost.timeToWait = -1;
+			moveGhost();
+		}
+	}else{
+			moveGhost();
+	}
+	
+		
   LPC_TIM2->IR = 1;			/* clear interrupt flag */
   return;
 }
