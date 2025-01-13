@@ -96,7 +96,6 @@ void gameInit()
 	game.numOfPillsNotTaken=240;
 	game.positionOfPacman.y=23;
 	game.positionOfPacman.x=1;
-	//game.labirinth[game.positionOfPacman.y][game.positionOfPacman.x]= Pacman;
 	
 	init_ghost();
 	printWholeMatrix();//stampiamo la matrice
@@ -110,14 +109,17 @@ void gameInit()
 	init_timer(1,0,0x2625A0); // aggiornamento movimento pacman , 0.1s
 	init_RIT(0x4C4B40); //ogni 50ms
 
-	//inizialmente ogni 0.62 secondi si aggiorna il movimento del ghost
-	init_timer(2,0,0xEC82E0);
+	//per la musica
+	init_timer(0,0,0x989680);
+	init_timer(3,0,2120);
+	
 	
 	enable_RIT();
 	NVIC_SetPriority(RIT_IRQn,0);
-	NVIC_SetPriority(TIMER0_IRQn,2);
+	NVIC_SetPriority(TIMER0_IRQn,0);
 	NVIC_SetPriority(TIMER1_IRQn,2);
-	NVIC_SetPriority(TIMER2_IRQn,0);
+	NVIC_SetPriority(TIMER2_IRQn,1);
+	NVIC_SetPriority(TIMER3_IRQn,2);
 
 	generateSuperPills();
 
@@ -393,13 +395,17 @@ void movePacman(int up, int down, int left, int right)
 				if(game.ghost.status == FrightendMod)
 				{
 					game.score += POINTSFORGHOST;
+					
+					//aggiorno lo score
 					sprintf(string,"%d",game.score);
 					GUI_Text(205, 25, (uint8_t *) string, White, Black);
 					
+					//reimposto il fantasma nel rettangolo
 					init_ghost();
 					game.ghost.timeToWait = game.timer - TIMETOWAITGHOST;
 					enable_timer(1);
 				}else{
+					// se pacman è stato catturato dal ghost allora se ne occupa l'handler del ghost
 					return;
 				}
 		}
@@ -473,6 +479,8 @@ void gameOver()
 	disable_timer(1);
 	disable_RIT();
 	disable_timer(2);
+	disable_timer(3);
+
 	
 	GUI_Text(65, 158, (uint8_t *) " Game Over!", Red, Black);
 	
@@ -483,6 +491,9 @@ void victory()
 	game.status = Win;
 	disable_timer(0);
 	disable_timer(1);
+	disable_timer(2);
+	disable_timer(3);
+
 	disable_RIT();
 	
 	GUI_Text(79, 158, (uint8_t *) "Victory!", Yellow, Black);
@@ -495,6 +506,8 @@ void pause()
 	disable_timer(0);
 	disable_timer(1);
 	disable_timer(2);
+	disable_timer(3);
+
 	
 	GUI_Text(90, 158, (uint8_t *) "Pause", White, Black);
 }
@@ -504,6 +517,8 @@ void resume()
 	enable_timer(0);
 	enable_timer(1);
 	enable_timer(2);
+	enable_timer(3);
+
 
 	GUI_Text(90, 158, (uint8_t *) "Pause", Black, Black);	
 	printGhost();

@@ -14,6 +14,14 @@
 #include "../TouchPanel/TouchPanel.h"
 #include <stdio.h> /*for sprintf*/
 #include "sample.h"
+uint16_t SinTable[45] =                                       /* ÕýÏÒ±í                       */
+{
+    410, 467, 523, 576, 627, 673, 714, 749, 778,
+    799, 813, 819, 817, 807, 789, 764, 732, 694, 
+    650, 602, 550, 495, 438, 381, 324, 270, 217,
+    169, 125, 87 , 55 , 30 , 12 , 2  , 0  , 6  ,   
+    20 , 41 , 70 , 105, 146, 193, 243, 297, 353
+};
 
 extern volatile PACMAN game;
 /******************************************************************************
@@ -29,7 +37,7 @@ extern volatile PACMAN game;
 
 void TIMER0_IRQHandler (void)
 {
-	static int  i=0;
+		static int  i=0;
 	static int numOfPillsGenerated=0;
 	int randomNumberY ,randomNumberX;
 	char stringa[3];
@@ -72,8 +80,7 @@ void TIMER0_IRQHandler (void)
 			
 		}
 	}
-	
-		
+
 	LPC_TIM0->IR = 1;			/* clear interrupt flag */
   return;
 }
@@ -90,6 +97,8 @@ void TIMER0_IRQHandler (void)
 ******************************************************************************/
 void TIMER1_IRQHandler (void)
 {
+	static numCall=0;
+	numCall++;
 	switch(game.pacmanDirection)
 	{
 		case Right:
@@ -105,28 +114,54 @@ void TIMER1_IRQHandler (void)
 			movePacmanDown();
 			break;
 	}
-
+	
+	//la velocità di ghost sarà prima 0.3s, poi 0.2s e poi 0.1s
+	if(
+		(game.timer > 40 && game.timer <= 60 && numCall % 3 == 0)
+		||
+		(game.timer > 20 && game.timer <= 40 && numCall % 2 == 0)
+		||
+		(game.timer <= 20)
+	)
+	{
+		if(game.ghost.timeToWait != -1)
+		{
+			if(game.ghost.timeToWait == game.timer)
+			{
+				game.ghost.timeToWait = -1;
+				moveGhost();
+			}
+		}else{
+			moveGhost();
+			
+		}
+		numCall = 0;
+	}
   LPC_TIM1->IR = 1;			/* clear interrupt flag */
   return;
 }
 
 void TIMER2_IRQHandler (void)
 {
-	if(game.ghost.timeToWait != -1)
-	{
-		if(game.ghost.timeToWait == game.timer)
-		{
-			game.ghost.timeToWait = -1;
-			moveGhost();
-		}
-	}else{
-			moveGhost();
-	}
 	
-		
   LPC_TIM2->IR = 1;			/* clear interrupt flag */
   return;
 }
+
+
+void TIMER3_IRQHandler (void)
+{
+//	static int ticks=0;
+//	/* DAC management */	
+//	LPC_DAC->DACR = (SinTable[ticks]<<6);
+//	ticks++;
+//	if(ticks==45) ticks=0;
+
+
+  LPC_TIM3->IR = 1;			/* clear interrupt flag */
+  return;
+}
+
 
 /******************************************************************************
 **                            End Of File
