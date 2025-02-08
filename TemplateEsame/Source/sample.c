@@ -20,21 +20,20 @@
 #include "timer/timer.h"
 #include "RIT/RIT.h"
 #include "joystick/joystick.h"
+#include "sample.h"
 
 #ifdef SIMULATOR
 extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emulator to find the symbol (can be placed also inside system_LPC17xx.h but since it is RO, it needs more work)
 #endif
 
-extern int ASM_funct(int, int, int, int, int, int, int*);
-
-int vett[100];
+//extern int ASM_funct(int, int, int, int, int, int, int*);
 
 /*----------------------------------------------------------------------------
   Main Program
  *----------------------------------------------------------------------------*/
 int main (void) {
-  unsigned int i=0xFFFFFFFF, j=2, k=3, l=4, m=5, n=6;
-
+	//RIT 100 000 000
+	//Timer 25 000 000
 	
 	SystemInit();  												/* System Initialization (i.e., PLL)  */
   LED_init();                           /* LED Initialization                 */
@@ -54,13 +53,12 @@ int main (void) {
 																				/* T = 1s	(one second)   							*/							
 	//enable_timer(2);
 	
-	init_timer(1, 0, 0, 1, 0x3D090); //MR0
-	init_timer(1, 0, 1, 3, 0xF4240); //MR1
-	volatile long long int r=0;
-	vett[0]=0x55aa55aa;
-	vett[1]=0xFEDEFEDE;
+	//init_timer(1, 0, 1, 0x3D090); //MR0
+	//init_timer(1, 1, 3, 0xF4240); //MR1
+	
+//	volatile long long int r=0;
 
-	r = ASM_funct(i, j, k, l, m, n, vett);
+//	r = ASM_funct(i, j, k, l, m, n, vett);
 
 	LPC_SC->PCON |= 0x1;									/* power-down	mode										*/
 	LPC_SC->PCON &= ~(0x2);		

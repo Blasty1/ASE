@@ -18,9 +18,9 @@
 
 	/* Variabili Globali Gestione De-Bouncing */
 	
-volatile int down_0 = 0;
-volatile int down_1 = 0;
-volatile int down_2 = 0;
+volatile int down_0 = 0; //INT0
+volatile int down_1 = 0;  // KEY1
+volatile int down_2 = 0;  //KEY2
 volatile int toRelease_down_0 = 0;
 volatile int toRelease_down_1 = 0;
 volatile int toRelease_down_2 = 0;
